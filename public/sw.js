@@ -37,7 +37,20 @@ self.addEventListener("fetch", (event) => {
           }
           return response;
         })
-        .catch(() => caches.match(event.request))
+        .catch(async () => {
+          const cached = await caches.match(event.request);
+          if (cached) {
+            return cached;
+          }
+
+          return new Response(
+            JSON.stringify({ error: "offline", message: "Network unavailable and no cached response" }),
+            {
+              status: 503,
+              headers: { "Content-Type": "application/json" },
+            }
+          );
+        })
     );
     return;
   }
