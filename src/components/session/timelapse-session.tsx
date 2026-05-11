@@ -64,7 +64,10 @@ type FfmpegModule = {
 let framesDbPromise: Promise<IDBDatabase> | null = null;
 
 function createSessionId() {
-  return `session-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  const randomValues = new Uint32Array(2);
+  crypto.getRandomValues(randomValues);
+  const randomSuffix = `${randomValues[0].toString(36)}${randomValues[1].toString(36)}`;
+  return `session-${Date.now()}-${randomSuffix.slice(0, 12)}`;
 }
 
 function hasDisplayMediaSupport() {
