@@ -1,4 +1,5 @@
 const STATIC_CACHE = "timelapse-static-v1";
+const DYNAMIC_CACHE = "timelapse-dynamic-v1";
 const STATIC_ASSETS = ["/", "/dashboard", "/manifest.webmanifest", "/icons/app-icon.svg"];
 
 self.addEventListener("install", (event) => {
@@ -9,7 +10,11 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((key) => key !== STATIC_CACHE).map((key) => caches.delete(key)))
+      Promise.all(
+        keys
+          .filter((key) => key !== STATIC_CACHE && key !== DYNAMIC_CACHE)
+          .map((key) => caches.delete(key))
+      )
     )
   );
   self.clients.claim();
@@ -28,7 +33,7 @@ self.addEventListener("fetch", (event) => {
         .then((response) => {
           if (response.ok) {
             const clone = response.clone();
-            caches.open(STATIC_CACHE).then((cache) => cache.put(event.request, clone));
+            caches.open(DYNAMIC_CACHE).then((cache) => cache.put(event.request, clone));
           }
           return response;
         })
@@ -47,7 +52,7 @@ self.addEventListener("fetch", (event) => {
         .then((response) => {
           if (response.ok && requestUrl.origin === self.location.origin) {
             const clone = response.clone();
-            caches.open(STATIC_CACHE).then((cache) => cache.put(event.request, clone));
+            caches.open(DYNAMIC_CACHE).then((cache) => cache.put(event.request, clone));
           }
           return response;
         })
