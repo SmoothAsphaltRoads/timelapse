@@ -41,16 +41,22 @@ sudo dnf groupinstall "Development Tools"
 sudo dnf install cmake qt6-qtbase-devel ffmpeg-devel pipewire-devel pkgconf-pkg-config
 ```
 
-### 2. Windows
+### 2. Windows (Pure GCC / MinGW Setup)
 
-1. Download and install **Visual Studio 2022** (Community Edition works perfectly). Ensure you check the box for **Desktop development with C++**.
-2. Download and install **CMake**.
-3. Install **vcpkg** (Microsoft's C++ package manager) to fetch libraries effortlessly:
+No heavy Visual Studio installation is required. You can compile completely using the open-source **GCC** toolchain.
+
+1. **Install GCC (MinGW-w64):** Download the latest GCC standalone compiler pack from [winlibs.com](https://winlibs.com/) (Choose the *UCRT runtime, Release* version). Extract it to a folder like `C:\winlibs` and add `C:\winlibs\mingw64\bin` to your Windows **Environment System PATH**.
+2. **Install CMake:** Download and install the standard Windows binary installer from the official CMake website.
+3. **Fetch Libraries via vcpkg:** Open your command prompt and tell `vcpkg` to explicitly compile your assets using GCC instead of MSVC:
    ```cmd
    git clone [https://github.com/microsoft/vcpkg.git](https://github.com/microsoft/vcpkg.git)
    cd vcpkg
    ./bootstrap-vcpkg.bat
-   ./vcpkg install qt6-base ffmpeg:x64-windows
+   
+   set VCPKG_DEFAULT_TRIPLET=x64-mingw-dynamic
+   set VCPKG_DEFAULT_HOST_TRIPLET=x64-mingw-dynamic
+   
+   ./vcpkg install qt6-base ffmpeg:x64-mingw-dynamic
    ```
 
 ### 3. macOS
@@ -83,14 +89,18 @@ make -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
 ./TimelapseTray
 ```
 
-### On Windows (Visual Studio Developer Command Prompt):
+### On Windows (Command Prompt / PowerShell using GCC):
 ```cmd
 mkdir build
 cd build
-cmake -DCMAKE_TOOLCHAIN_FILE=C:/path/to/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release ..
+
+# Generate Makefiles referencing the MinGW GCC compiler suite
+cmake -G "MinGW Makefiles" -DCMAKE_TOOLCHAIN_FILE=C:/path/to/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-mingw-dynamic -DCMAKE_BUILD_TYPE=Release ..
+
+# Compile the application using your local g++ compiler engine
 cmake --build . --config Release
 ```
-The compiled, optimized execution executable will be located inside `build\Release\TimelapseTray.exe`.
+The compiled, optimized execution executable will be located inside `build/TimelapseTray.exe`.
 
 ---
 
