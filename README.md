@@ -41,22 +41,21 @@ sudo dnf groupinstall "Development Tools"
 sudo dnf install cmake qt6-qtbase-devel ffmpeg-devel pipewire-devel pkgconf-pkg-config
 ```
 
-### 2. Windows (Pure GCC / MinGW Setup)
+### 2. Windows (Terminal-Only GCC Setup)
 
-No heavy Visual Studio installation is required. You can compile completely using the open-source **GCC** toolchain.
+No heavy Visual Studio downloads or manual path editing required. Run these commands back-to-back in your standard Command Prompt or PowerShell:
 
-1. **Install GCC (MinGW-w64):** Download the latest GCC standalone compiler pack from [winlibs.com](https://winlibs.com/) (Choose the *UCRT runtime, Release* version). Extract it to a folder like `C:\winlibs` and add `C:\winlibs\mingw64\bin` to your Windows **Environment System PATH**.
-2. **Install CMake:** Download and install the standard Windows binary installer from the official CMake website.
-3. **Fetch Libraries via vcpkg:** Open your command prompt and tell `vcpkg` to explicitly compile your assets using GCC instead of MSVC:
+1. **Install Build Tools:** Run the package manager and restart your terminal window afterward:
    ```cmd
-   git clone [https://github.com/microsoft/vcpkg.git](https://github.com/microsoft/vcpkg.git)
-   cd vcpkg
-   ./bootstrap-vcpkg.bat
-   
-   set VCPKG_DEFAULT_TRIPLET=x64-mingw-dynamic
-   set VCPKG_DEFAULT_HOST_TRIPLET=x64-mingw-dynamic
-   
-   ./vcpkg install qt6-base ffmpeg:x64-mingw-dynamic
+   winget install GNU.MinGW -e && winget install Kitware.CMake -e && winget install Git.Git -e
+   ```
+2. **Bootstrap the vcpkg Library Manager:**
+   ```cmd
+   git clone [https://github.com/microsoft/vcpkg.git](https://github.com/microsoft/vcpkg.git) && cd vcpkg && .\bootstrap-vcpkg.bat
+   ```
+3. **Compile Dependencies with GCC:**
+   ```cmd
+   set VCPKG_DEFAULT_TRIPLET=x64-mingw-dynamic && .\vcpkg install qt6-base ffmpeg:x64-mingw-dynamic
    ```
 
 ### 3. macOS
@@ -94,7 +93,8 @@ make -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
 mkdir build
 cd build
 
-# Generate Makefiles referencing the MinGW GCC compiler suite
+# Generate Makefiles referencing the MinGW GCC compiler suite 
+# (Make sure to replace "C:/path/to/vcpkg" with your actual vcpkg directory path)
 cmake -G "MinGW Makefiles" -DCMAKE_TOOLCHAIN_FILE=C:/path/to/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-mingw-dynamic -DCMAKE_BUILD_TYPE=Release ..
 
 # Compile the application using your local g++ compiler engine
